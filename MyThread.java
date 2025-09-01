@@ -1,45 +1,57 @@
 package session2;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class MyThread extends Thread{
+/**
+ * A demonstration class for multi-threading behavior.
+ * This class shows how multiple threads can safely increment a shared counter.
+ */
+public class MyThread extends Thread {
+    // Using AtomicInteger for thread-safe operations
+    private static final AtomicInteger counter = new AtomicInteger(0);
+    private static final Random RANDOM = new Random();
+    private static final int ITERATION_COUNT = 10;
+    private static final int MAX_SLEEP_TIME = 200;
 
-    public static int var = 0;
     @Override
     public void run() {
-        Random rand = new Random();
-        for (int i = 0; i < 10; i++) {
-//            System.out.println("MyThread Running" + " " + Thread.currentThread().getName());
-//            System.out.println(Thread.currentThread().getName() + "->" + "Running");
-//            System.out.println(Thread.currentThread().getName() + " " + "is Running");
-            var++;
-            System.out.println(Thread.currentThread().getName() + "  " + var);
+        for (int i = 0; i < ITERATION_COUNT; i++) {
+            int currentValue = counter.incrementAndGet();
+            System.out.println(String.format("%s: Counter value = %d",
+                Thread.currentThread().getName(), currentValue));
+
             try {
-                Thread.sleep(Math.abs(rand.nextInt() % 200));
+                Thread.sleep(Math.abs(RANDOM.nextInt() % MAX_SLEEP_TIME));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                System.err.println("Thread interrupted: " + e.getMessage());
+                break;
             }
         }
     }
 
-    public static void main(String[] argus) {
-        MyThread myThread = new MyThread();
-        MyThread myThread2 = new MyThread();
-        myThread.start();
-        myThread2.start();
-        Thread thread = new Thread() {
-            public void run() {
-            System.out.println("Thread Running");
-            }
-        };
-        thread.start();
+    /**
+     * Main method to demonstrate thread execution.
+     * Creates and starts multiple threads to show concurrent execution.
+     *
+     * @param args command line arguments (not used)
+     */
+    public static void main(String[] args) {
+        MyThread thread1 = new MyThread();
+        MyThread thread2 = new MyThread();
+
+        thread1.setName("Thread-1");
+        thread2.setName("Thread-2");
+
+        thread1.start();
+        thread2.start();
+
+        // Example of anonymous thread class
+        Thread anonymousThread = new Thread(() ->
+            System.out.println("Anonymous thread running")
+        );
+        anonymousThread.setName("Anonymous-Thread");
+        anonymousThread.start();
     }
 }
-
-
-//Thread thread = new Thread() {
-//    public void run() {
-//        System.out.println("Thread Running");
-//    }
-//}
-//thread.start();
